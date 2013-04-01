@@ -3,31 +3,55 @@
  * basic-server.js.  So you must figure out how to export the function
  * from this file and include it in basic-server.js. Check out the
  * node module documentation at http://nodejs.org/api/modules.html. */
-var storage = require('./node_modules/node-persist/persist')
-storage.initSync();
-storage.setItem('length', 0);
+
+// Query String library to parse JSON request parameters
+var qs = require('querystring');
+
+// Messages storage array
+var messages = [];
 
 var handleRequest = function(request, response, headers) {
-  var statusCode, retData;
+  var statusCode, retData = '';
 
   if(require('url').parse(request.url).path === '/classes/room1') {
     if(request.method === 'GET') {
       statusCode = 200;
       // TODO: allow for more than one element for storage
-      retData = storage.getItem('length') === 0 ? '[]' : storage.getItem('data');
+      retData = messages.length === 0 ? '[]' : messages.pop();
     }
     if(request.method === 'POST') {
       statusCode = 302;
       retData = "\n";
-      storage.setItem('data', JSON.stringify([request._postData]));
-      storage.setItem('length', 1);
+      messages.push(JSON.stringify([request._postData]));
     }
   } else if(require('url').parse(request.url).path === '/classes/messages') {
     if(request.method === 'GET') {
       statusCode = 200;
+      retData = messages.length === 0 ? '[]' : JSON.stringify(messages);
     }
-    if(request.method === 'POST') {
+    else if(request.method === 'POST') {
       statusCode = 302;
+      retData = "\n";
+      var data = '';
+
+      // Buffer the post request's data
+      request.on('data', function(chunk) {
+        data += chunk;
+      });
+
+      // Process request now that the request has been completed
+      request.on('end', function() {
+        console.log('New Message: ',qs.parse(data));
+        // Only maintain 20 messages
+        if(messages.length > 20) {
+          messages.shift();
+        }
+        messages.push(qs.parse(data));
+        console.log(messages);
+      });
+    }
+    else {
+      statusCode = 200;
     }
   } else {
     statusCode = 404;
