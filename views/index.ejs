@@ -15,7 +15,7 @@
     <script id="message-template" type="text/x-handlebars-template">
       <div class="message" data-roomname="{{roomname}}">
         (<span class="time">{{time}}</span>)
-        <span class="username">{{username}}</span>:
+        <span class="username {{#if highlight}} highlight {{/if}}">{{username}}</span>:
         <span class="message">{{message}}</span>
       </div>
     </script>

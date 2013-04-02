@@ -43,7 +43,7 @@ body {
   height: 500px;
 }
 
-.highlight {
+.highlight, span.username.highlight {
   font-weight: bold;
   color: red;
   font-size: 14px;

@@ -49,7 +49,8 @@ var getMessages = function() {
             time: moment(message.createdAt).fromNow(),
             username: message.username,
             message: message.text,
-            roomname: message.roomname
+            roomname: message.roomname,
+            highlight: selectedFriends[message.username]
           };
           // console.log(message);
           if(!window.selectedRoom || window.selectedRoom === 'All Rooms') {
@@ -190,11 +191,13 @@ var clickFriend = function(e) {
       _($('#friends li')).each(function(friend) {
         $(friend).removeClass('highlight');
       });
+      $('span.username').removeClass('highlight');
     } else {
       _($('#friends li')).each(function(friend) {
         window.selectedFriends[$(friend).text()] = true;
         $(friend).addClass('highlight');
       });
+      $('span.username').addClass('highlight');
     }
   } else {
     // Click a friend and add it to window.selectedFriends
