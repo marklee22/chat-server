@@ -14,9 +14,9 @@ var init = function() {
   $('.input-message').on('keypress', function(e) {
     var username = window.location.search.substring('?username='.length).replace(/%20/g,' ') || 'anonymous';
     var message = $(this).val();
-    // alert(window.location.pathname.match(/classes\/(?!messages)([a-zA-Z0-9\-]+)$/)[1]);
-    var roomname = window.location.pathname.match(/classes\/(?!messages)([a-zA-Z0-9\-]+)$/)[1] || undefined;
-    // var roomname = undefined;
+    var roomname = window.location.pathname !== '/' ?
+        window.location.pathname.match(/classes\/(?!messages)([a-zA-Z0-9\-]+)$/)[1] : undefined;
+    
     if(e.which == 13) {
       sendMessage(username, message, roomname);
       $(this).val('');
@@ -25,17 +25,13 @@ var init = function() {
 };
 
 var getMessages = function() {
-  // console.log(window.location)
-  // console.log(window.location.host + window.location.pathname);
   $.ajax('http://' + window.location.host + '/classes/messages', {
     type: 'GET',
     contentType: 'json',
     success: function(data) {
       $('#messages').empty();
       var html = '';
-      // console.log('GET data: ', data);
       data = JSON.parse(data);
-      // console.log('JSON parsed: ', data);
 
       // Sort the array by descending date
       data = _(data).sortBy(function(message) {
@@ -56,7 +52,7 @@ var getMessages = function() {
             roomname: message.roomname
           };
           // console.log(message);
-          if(!window.selectedRoom) {
+          if(!window.selectedRoom || window.selectedRoom === 'All Rooms') {
             html += template(context);
           } else {
             if (message.roomname === window.selectedRoom) {
@@ -122,18 +118,23 @@ var populateSideBar = function() {
   // Get the chatrooms DOM node that we will update
   var $chatrooms = $('#chatrooms ul');
   $chatrooms.empty();
-  $chatrooms.append($('<li>All Messages</li>').on('click', clickRoom));
+  var $node = $('<li>All Rooms</li>');
+  if(window.selectedRoom === 'All Rooms') $node.addClass('highlight');
+  $chatrooms.append($node.on('click', clickRoom));
 
   // Iterate through all unique room names and attach jQuery event handler
   _.chain(roomArray).uniq().each(function(room) {
     var $node = $('<li>' + room + '</li>');
+    if(window.selectedRoom === room || window.selectedRoom === 'All Rooms') {
+      $node.addClass('highlight');
+    }
     $node.on('click', clickRoom);
     $chatrooms.append($node);
   });
 
   var $friends = $('#friends ul');
   $friends.empty();
-  var $node = $('<li>All Friends</li>');
+  $node = $('<li>All Friends</li>');
 
   // Determine if All Friends has been clicked previously
   if(window.selectedFriends['All Friends']) {
@@ -143,7 +144,7 @@ var populateSideBar = function() {
 
   // Iterate through friends and highlight the ones that are our friends
   _.chain(friendArray).uniq().each(function(friend) {
-    var $node = $('<li>' + friend + '</li>');
+    $node = $('<li>' + friend + '</li>');
 
     // Add highlight class if friend has been befriended
     if(window.selectedFriends[friend]) {
@@ -158,12 +159,24 @@ var populateSideBar = function() {
 
 /** Event handler for when a room is clicked **/
 var clickRoom = function(e) {
-  // Check if All Messages was clicked
-  if($(this).text() === 'All Messages') {
-    window.selectedRoom = undefined;
+  // Check if All Rooms was clicked
+  if($(this).text() === 'All Rooms') {
+    // Check if 'All Rooms' is being unclicked
+    if(window.selectedRoom === 'All Rooms') {
+      window.selectedRoom = undefined;
+      _($('#chatrooms li')).each(function(room) {
+        $(room).removeClass('highlight');
+      });
+    } else {
+      window.selectedRoom = 'All Rooms';
+      _($('#chatrooms li')).each(function(room) {
+        $(room).addClass('highlight');
+      });
+    }
   } else {
     // Grab the room name of the room clicked
     window.selectedRoom = $(this).text();
+    $(this).addClass('highlight');
   }
   getMessages();
   console.log("clicked room: " + window.selectedRoom);

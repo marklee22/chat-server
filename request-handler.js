@@ -11,6 +11,7 @@ var fs = require('fs');
 
 // Load templates once
 var indexTemplate = fs.readFileSync('./views/index.ejs').toString();
+var notFoundTemplate = fs.readFileSync('./views/404.ejs').toString();
 
 // Messages storage array
 var messages = [];
@@ -38,7 +39,7 @@ var handleRequest = function(request, response, headers) {
     statusCode = 200;
     headers['Content-Type'] = 'text/html';
     retData = ejs.render(indexTemplate);
-  } else if(urlPath === '/classes/messages') { // && request.headers['content-type'] === 'json') {
+  } else if(urlPath === '/classes/messages' && request.headers['content-type'] === 'json') {
     if(request.method === 'GET') {
       statusCode = 200;
       retData = messages.length === 0 ? '[]' : JSON.stringify(messages);
@@ -85,6 +86,8 @@ var handleRequest = function(request, response, headers) {
   // }
   else {
     statusCode = 404;
+    headers['Content-Type'] = 'text/html';
+    retData = ejs.render(notFoundTemplate);
   }
 
   response.writeHead(statusCode, headers);
