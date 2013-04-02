@@ -16,7 +16,7 @@ describe("Live Node Chat Server", function() {
                message: "Do my bidding!"}
             },
            function(error, response, body) {
-             expect(response.statusCode).toEqual(302);
+             expect(response.statusCode).toEqual(200);
              // Now if we request the log, that message 
              // we posted should be there:
              request("http://127.0.0.1:8080/classes/messages",

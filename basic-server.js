@@ -1,6 +1,9 @@
 /* Import node's http module: */
 var http = require("http");
 var handler = require('./request-handler');
+var connect = require('connect');
+
+
 
 /* This is the callback function that will be called each time a
  * client (i.e.. a web browser) makes a request to our server. */
@@ -50,11 +53,11 @@ var port = 8080;
 /* For now, since you're running this server on your local machine,
  * we'll have it listen on the IP address 127.0.0.1, which is a
  * special address that always refers to localhost. */
-var ip = "127.0.0.1";
+var ip = "10.0.1.15";
 
 /* Use node's http module to create a server and start it listening on
  * the given port and IP. */
-var server = http.createServer(requestListener);
+var server = connect.createServer(requestListener);
 console.log("Listening on http://" + ip + ":" + port);
 server.listen(port, ip);
 

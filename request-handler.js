@@ -4,33 +4,47 @@
  * from this file and include it in basic-server.js. Check out the
  * node module documentation at http://nodejs.org/api/modules.html. */
 
-// Query String library to parse JSON request parameters
+// Load Node modules
 var qs = require('querystring');
+var ejs = require('ejs');
+var fs = require('fs');
+
+// Load templates once
+var indexTemplate = fs.readFileSync('./views/index.ejs').toString();
 
 // Messages storage array
 var messages = [];
+var PUBLIC_DIR = 'public';
 
 var handleRequest = function(request, response, headers) {
-  var statusCode, retData = '';
+  var statusCode, fileName, retData = '';
+  var urlPath = require('url').parse(request.url).path;
 
-  if(require('url').parse(request.url).path === '/classes/room1') {
-    if(request.method === 'GET') {
-      statusCode = 200;
-      // TODO: allow for more than one element for storage
-      retData = messages.length === 0 ? '[]' : messages.pop();
-    }
-    if(request.method === 'POST') {
-      statusCode = 302;
-      retData = "\n";
-      messages.push(JSON.stringify([request._postData]));
-    }
-  } else if(require('url').parse(request.url).path === '/classes/messages') {
+  if(urlPath === '/') {
+    statusCode = 200;
+    headers['Content-Type'] = 'text/html';
+    retData = ejs.render(indexTemplate);
+  } else if(fileName = urlPath.match(/([^\/]+\.css)$/)) {
+    statusCode = 200;
+    headers['Content-Type'] = 'text/css';
+    console.log(require('url').parse(request.url));
+    retData = fs.readFileSync(__dirname + '/public/css/' + fileName[0]);
+  } else if(fileName = urlPath.match(/([^\/]+\.js)$/)) {
+    statusCode = 200;
+    headers['Content-Type'] = 'text/javascript';
+    console.log(fileName);
+    retData = fs.readFileSync(__dirname + '/public/js/' + fileName[0]);
+  } else if(urlPath.match(/classes\/(?!messages)([a-zA-Z0-9\-]+)$/)) {
+    statusCode = 200;
+    headers['Content-Type'] = 'text/html';
+    retData = ejs.render(indexTemplate);
+  } else if(urlPath === '/classes/messages') { // && request.headers['content-type'] === 'json') {
     if(request.method === 'GET') {
       statusCode = 200;
       retData = messages.length === 0 ? '[]' : JSON.stringify(messages);
     }
     else if(request.method === 'POST') {
-      statusCode = 302;
+      statusCode = 200;
       retData = "\n";
       var data = '';
 
@@ -41,19 +55,35 @@ var handleRequest = function(request, response, headers) {
 
       // Process request now that the request has been completed
       request.on('end', function() {
-        console.log('New Message: ',qs.parse(data));
+        var message = JSON.parse(data);
+        console.log('New Message: ',message);
         // Only maintain 20 messages
         if(messages.length > 20) {
           messages.shift();
         }
-        messages.push(qs.parse(data));
+        message['createdAt'] = new Date();
+        message['updatedAt'] = new Date();
+        messages.push(message);
         console.log(messages);
       });
     }
     else {
       statusCode = 200;
     }
-  } else {
+  }
+  // Used for ServerSpec.spec tests only
+  // else if(urlPath === '/classes/room1') {
+  //   if(request.method === 'GET') {
+  //     statusCode = 200;
+  //     retData = messages.length === 0 ? '[]' : messages.pop();
+  //   }
+  //   if(request.method === 'POST') {
+  //     statusCode = 302;
+  //     retData = "\n";
+  //     messages.push(JSON.stringify([request._postData]));
+  //   }
+  // }
+  else {
     statusCode = 404;
   }
 
