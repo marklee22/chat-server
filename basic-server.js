@@ -48,18 +48,16 @@ var defaultCorsHeaders = {
  * normally already claimed by another server and/or not accessible to
  * user processes, so we'll use a higher port number that is not
  * likely to be taken: */
-var port = 8080;
+var port = 5000;
 
-/* For now, since you're running this server on your local machine,
- * we'll have it listen on the IP address 127.0.0.1, which is a
- * special address that always refers to localhost. */
-var ip = "10.0.1.15";
+// var ip = "stormy-harbor-4871.herokuapp.com";
+var ip = "localhost";
 
 /* Use node's http module to create a server and start it listening on
  * the given port and IP. */
 var server = connect.createServer(requestListener);
-console.log("Listening on http://" + ip + ":" + port);
-server.listen(port, ip);
+// console.log("Listening on http://" + ip + ":" + port);
+server.listen(port);
 
 /* To start this server, run:
      node basic-server.js

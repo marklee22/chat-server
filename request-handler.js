@@ -28,12 +28,12 @@ var handleRequest = function(request, response, headers) {
   } else if(fileName = urlPath.match(/([^\/]+\.css)$/)) {
     statusCode = 200;
     headers['Content-Type'] = 'text/css';
-    console.log(require('url').parse(request.url));
+    // console.log(require('url').parse(request.url));
     retData = fs.readFileSync(__dirname + '/public/css/' + fileName[0]);
   } else if(fileName = urlPath.match(/([^\/]+\.js)$/)) {
     statusCode = 200;
     headers['Content-Type'] = 'text/javascript';
-    console.log(fileName);
+    // console.log(fileName);
     retData = fs.readFileSync(__dirname + '/public/js/' + fileName[0]);
   } else if(urlPath.match(/classes\/(?!messages)([a-zA-Z0-9\-]+)$/)) {
     statusCode = 200;
@@ -57,7 +57,7 @@ var handleRequest = function(request, response, headers) {
       // Process request now that the request has been completed
       request.on('end', function() {
         var message = JSON.parse(data);
-        console.log('New Message: ',message);
+        // console.log('New Message: ',message);
         // Only maintain 20 messages
         if(messages.length > 20) {
           messages.shift();
@@ -65,7 +65,7 @@ var handleRequest = function(request, response, headers) {
         message['createdAt'] = new Date();
         message['updatedAt'] = new Date();
         messages.push(message);
-        console.log(messages);
+        // console.log(messages);
       });
     }
     else {
