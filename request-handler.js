@@ -56,6 +56,7 @@ var handleRequest = function(request, response, headers) {
 
       // Process request now that the request has been completed
       request.on('end', function() {
+        
         var message = JSON.parse(data);
         // console.log('New Message: ',message);
         // Only maintain 20 messages
